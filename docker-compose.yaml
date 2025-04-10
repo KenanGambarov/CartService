@@ -8,6 +8,7 @@ services:
       - redis
     ports:
       - "8081:8081"
+#    First we need create network for feign client
 #    docker network create ms-services
     networks:
       - ms-services
