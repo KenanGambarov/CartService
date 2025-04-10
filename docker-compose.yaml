@@ -1,0 +1,53 @@
+version: '3.1'
+services:
+  cart-service:
+    image: cartservices:1.0
+    hostname: ms.cart
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8081:8081"
+#    docker network create ms-services
+    networks:
+      - ms-services
+    environment:
+      DB_CONNECTION_IP: db
+      DB_CONNECTION_PORT: 5432
+      DB_NAME: card_service
+      DB_CONNECTION_USERNAME: admin
+      DB_CONNECTION_PASSWORD: 123456
+  db:
+    hostname: postgresql
+    image: postgres:15
+    networks:
+      - ms-services
+    restart: always
+    volumes:
+      - cart_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: card_service
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+  adminer:
+    image: adminer
+    networks:
+      - ms-services
+    restart: always
+    ports:
+      - "8580:8080"
+  redis:
+    image: redis:latest
+    container_name: redis_cart
+    networks:
+      - ms-services
+    ports:
+      - "6379:6379"
+networks:
+  ms-services:
+    external: true
+volumes:
+    cart_db_data :
+    elasticsearch_data:
