@@ -37,7 +37,6 @@ public class CartServiceImpl implements CartService {
     @Override
     public void addProductToCart(Long userId, CartItemDto cartItemDto) {
         CartEntity cart = getActiveCartForUser(userId);
-        log.info("userId {} ", userId);
         if (cart == null) {
             cart = CartEntity.builder()
                     .userId(userId)
