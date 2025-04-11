@@ -19,7 +19,7 @@ public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/{userId}/addproduct")
+    @PostMapping("/{userId}/product/add")
     @ResponseStatus(HttpStatus.CREATED)
     public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemDto cartItemDto){
         cartService.addProductToCart(userId,cartItemDto);
