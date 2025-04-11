@@ -37,10 +37,4 @@ public class CartController {
         return cartService.getProductsFromCart(userId);
     }
 
-//    PUT	/cart/{userId}/update	Məhsul miqdarını dəyişir
-//    DELETE	/cart/{userId}/remove/{productId}	Məhsulu səbətdən çıxarır
-//    GET	/cart/{userId}	Səbəti göstərir
-//    DELETE	/cart/{userId}/clear
-
-
 }
