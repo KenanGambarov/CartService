@@ -4,7 +4,7 @@ services:
     image: cartservices:1.0
     hostname: ms.cart
     depends_on:
-      - db
+      - cart_db
       - redis
     ports:
       - "8081:8081"
@@ -13,12 +13,12 @@ services:
     networks:
       - ms-services
     environment:
-      DB_CONNECTION_IP: db
+      DB_CONNECTION_IP: cart_db
       DB_CONNECTION_PORT: 5432
-      DB_NAME: card_service
+      DB_NAME: cart_service
       DB_CONNECTION_USERNAME: admin
       DB_CONNECTION_PASSWORD: 123456
-  db:
+  cart_db:
     hostname: postgresql
     image: postgres:15
     networks:
@@ -27,28 +27,33 @@ services:
     volumes:
       - cart_db_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: card_service
+      POSTGRES_DB: cart_service
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: 123456
     ports:
-      - "5432:5432"
-  adminer:
-    image: adminer
-    networks:
-      - ms-services
-    restart: always
-    ports:
-      - "8580:8080"
+      - "5433:5432"
+#  adminer:
+#    image: adminer
+#    networks:
+#      - ms-services
+#    restart: always
+#    ports:
+#      - "8581:8080"
   redis:
     image: redis:latest
     container_name: redis_cart
+    volumes:
+      - redis_data:/data
     networks:
       - ms-services
     ports:
-      - "6379:6379"
+      - "6380:6379"
 networks:
   ms-services:
     external: true
 volumes:
-    cart_db_data :
-    elasticsearch_data:
+  cart_db_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
