@@ -1,7 +1,7 @@
 package com.cartservice.controller;
 
 import com.cartservice.dto.request.CartItemDto;
-import com.cartservice.dto.responso.CartItemResponseDto;
+import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.services.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

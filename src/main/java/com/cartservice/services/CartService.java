@@ -1,7 +1,7 @@
 package com.cartservice.services;
 
 import com.cartservice.dto.request.CartItemDto;
-import com.cartservice.dto.responso.CartItemResponseDto;
+import com.cartservice.dto.response.CartItemResponseDto;
 
 import java.util.List;
 

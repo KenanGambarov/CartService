@@ -4,7 +4,7 @@ import com.cartservice.client.ProductServiceClient;
 import com.cartservice.dto.product.ProductDto;
 import com.cartservice.dto.request.CartItemDto;
 import com.cartservice.dto.enums.CartStatus;
-import com.cartservice.dto.responso.CartItemResponseDto;
+import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
 import com.cartservice.exception.NotFoundException;

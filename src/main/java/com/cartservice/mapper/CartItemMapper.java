@@ -1,6 +1,6 @@
 package com.cartservice.mapper;
 
-import com.cartservice.dto.responso.CartItemResponseDto;
+import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.entity.CartItemEntity;
 
 public class CartItemMapper {
