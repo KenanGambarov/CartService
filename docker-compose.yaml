@@ -31,7 +31,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: 123456
     ports:
-      - "5433:5432"
+      - "5433:5433"
 #  adminer:
 #    image: adminer
 #    networks:
@@ -47,7 +47,7 @@ services:
     networks:
       - ms-services
     ports:
-      - "6380:6379"
+      - "6380:6380"
 networks:
   ms-services:
     external: true
