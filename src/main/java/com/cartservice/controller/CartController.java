@@ -19,7 +19,7 @@ public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/{userId}/addproduct")
+    @PostMapping("/{userId}/product/add")
     @ResponseStatus(HttpStatus.CREATED)
     public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemDto cartItemDto){
         cartService.addProductToCart(userId,cartItemDto);
@@ -36,11 +36,5 @@ public class CartController {
     public List<CartItemResponseDto> getProducts(@PathVariable Long userId){
         return cartService.getProductsFromCart(userId);
     }
-
-//    PUT	/cart/{userId}/update	Məhsul miqdarını dəyişir
-//    DELETE	/cart/{userId}/remove/{productId}	Məhsulu səbətdən çıxarır
-//    GET	/cart/{userId}	Səbəti göstərir
-//    DELETE	/cart/{userId}/clear
-
 
 }
