@@ -1,6 +1,5 @@
 package com.cartservice.dto.request;
 
-import com.cartservice.entity.CartEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

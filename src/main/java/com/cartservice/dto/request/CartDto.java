@@ -1,7 +1,6 @@
 package com.cartservice.dto.request;
 
 import com.cartservice.dto.enums.CartStatus;
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
