@@ -1,3 +1,10 @@
+logging:
+  config: classpath:logback-spring.xml
+spring:
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username: elastic
+    password: sSM*iZr*b0SOvxjC_QqP
 redis:
   server:
     urls: redis://redis:6379

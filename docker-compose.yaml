@@ -12,6 +12,8 @@ services:
 #    docker network create ms-services
     networks:
       - ms-services
+    volumes:
+      - ./logs/cart-service:/opt/app/logs/cart-service
     environment:
       DB_CONNECTION_IP: cart_db
       DB_CONNECTION_PORT: 5432
@@ -48,9 +50,20 @@ services:
       - ms-services
     ports:
       - "6380:6380"
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.1
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs/cart-service:/opt/app/logs/cart-service
+#    depends_on:
+#      - elasticsearch
+    networks:
+      - ms-services
 networks:
   ms-services:
     external: true
+    driver: bridge
 volumes:
   cart_db_data:
     driver: local
