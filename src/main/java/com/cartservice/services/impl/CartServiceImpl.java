@@ -111,7 +111,6 @@ public class CartServiceImpl implements CartService {
             throw new NotFoundException("Cart not found");
         }
 
-
         List<CartItemEntity> existingItem =  cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cart.getId()),
                 () -> {
                     return cartItemRepository.findByCartId(cart.getId());
@@ -156,7 +155,7 @@ public class CartServiceImpl implements CartService {
                 .findFirst();
     }
 
-    private List<CartItemEntity> fallbackCartItems(Long cartId) {
+    private List<CartItemEntity> fallbackCartItems(Long cartId, Throwable t) {
         log.error("Redis not available for getActiveCartForUser, falling back to DB. Error: {}", t.getMessage());
         return  cartItemRepository.findByCartId(cartId);
     }
