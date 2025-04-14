@@ -15,6 +15,8 @@ import com.cartservice.services.CartService;
 import com.cartservice.util.CacheUtil;
 import com.cartservice.util.constraints.CartCacheConstraints;
 import com.cartservice.util.constraints.CartCacheDurationConstraints;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -109,6 +111,7 @@ public class CartServiceImpl implements CartService {
             throw new NotFoundException("Cart not found");
         }
 
+
         List<CartItemEntity> existingItem =  cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cart.getId()),
                 () -> {
                     return cartItemRepository.findByCartId(cart.getId());
@@ -124,6 +127,8 @@ public class CartServiceImpl implements CartService {
 
     }
 
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetActiveCartForUser")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackGetActiveCartForUser")
     private CartEntity getActiveCartForUser(Long userId) {
         return cacheUtil.getOrLoad(CartCacheConstraints.CART_KEY.getKey(userId),
                 () -> {
@@ -134,6 +139,13 @@ public class CartServiceImpl implements CartService {
 
     }
 
+    private CartEntity fallbackGetActiveCartForUser(Long userId, Throwable t) {
+        log.error("Redis not available for getActiveCartForUser, falling back to DB. Error: {}", t.getMessage());
+        return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE);
+    }
+
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCartItems")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackCartItems")
     private Optional<CartItemEntity> getCartItems(Long cartId,Long productId) {
         List<CartItemEntity> items = cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId),
                 () -> cartItemRepository.findByCartId(cartId),
@@ -144,9 +156,20 @@ public class CartServiceImpl implements CartService {
                 .findFirst();
     }
 
+    private List<CartItemEntity> fallbackCartItems(Long cartId) {
+        log.error("Redis not available for getActiveCartForUser, falling back to DB. Error: {}", t.getMessage());
+        return  cartItemRepository.findByCartId(cartId);
+    }
+
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackClearCartCache")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackClearCartCache")
     private void clearCartCache(Long userId, Long cartId) {
         cacheUtil.deleteFromCache(CartCacheConstraints.CART_KEY.getKey(userId));
         cacheUtil.deleteFromCache(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId));
         log.debug("Cache cleared for user {} and cart {}", userId, cartId);
+    }
+
+    private void fallbackClearCartCache(Long userId, Long cartId, Throwable t) {
+        log.warn("Redis not available to clear cache for user {} and cart {}, ignoring. Error: {}", userId, cartId, t.getMessage());
     }
 }
