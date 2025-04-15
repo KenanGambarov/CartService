@@ -12,11 +12,7 @@ import com.cartservice.mapper.CartItemMapper;
 import com.cartservice.repository.CartItemRepository;
 import com.cartservice.repository.CartRepository;
 import com.cartservice.services.CartService;
-import com.cartservice.util.CacheUtil;
-import com.cartservice.util.constraints.CartCacheConstraints;
-import com.cartservice.util.constraints.CartCacheDurationConstraints;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import com.cartservice.services.CartServiceCache;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,13 +28,13 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final CacheUtil cacheUtil;
+    private final CartServiceCache cartServiceCache;
     private final ProductServiceClient productServiceClient;
 
     @Transactional
     @Override
     public void addProductToCart(Long userId, CartItemDto cartItemDto) {
-        CartEntity cart = getActiveCartForUser(userId);
+        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
         if (cart == null) {
             cart = CartEntity.builder()
                     .userId(userId)
@@ -73,14 +69,14 @@ public class CartServiceImpl implements CartService {
             log.info("User {} is adding product {} (quantity: {}) to cart", userId, cartItemDto.getProductId(), cartItemDto.getQuantity());
 
         }
-        clearCartCache(userId,cart.getId());
+        cartServiceCache.clearCartCache(userId,cart.getId());
 
     }
 
 
     @Override
     public void deleteProductFromCart(Long userId, Long productId) {
-        CartEntity cart = getActiveCartForUser(userId);
+        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
 
         if (cart == null) {
             throw new NotFoundException("Cart not found for user");
@@ -100,23 +96,18 @@ public class CartServiceImpl implements CartService {
             existingItem.setQuantity(existingItem.getQuantity()-1);
             cartItemRepository.save(existingItem);
         }
-        clearCartCache(userId,cart.getId());
+        cartServiceCache.clearCartCache(userId,cart.getId());
     }
 
     @Override
     public List<CartItemResponseDto> getProductsFromCart(Long userId) {
-        CartEntity cart = getActiveCartForUser(userId);
+        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
         if (cart == null) {
             log.warn("Cart not found for user {}", userId);
             throw new NotFoundException("Cart not found");
         }
 
-        List<CartItemEntity> existingItem =  cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cart.getId()),
-                () -> {
-                    return cartItemRepository.findByCartId(cart.getId());
-                },
-                CartCacheDurationConstraints.DAY.toDuration()
-        );
+        List<CartItemEntity> existingItem =  cartServiceCache.getCartItemsFromCacheOrDB(cart.getId());
 
         if (existingItem.isEmpty()) {
             throw new NotFoundException("Products not found in cart");
@@ -126,49 +117,14 @@ public class CartServiceImpl implements CartService {
 
     }
 
-    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetActiveCartForUser")
-    @Retry(name = "redisRetry", fallbackMethod = "fallbackGetActiveCartForUser")
-    private CartEntity getActiveCartForUser(Long userId) {
-        return cacheUtil.getOrLoad(CartCacheConstraints.CART_KEY.getKey(userId),
-                () -> {
-                    return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE);
-                },
-                CartCacheDurationConstraints.DAY.toDuration()
-        );
 
-    }
-
-    private CartEntity fallbackGetActiveCartForUser(Long userId, Throwable t) {
-        log.error("Redis not available for getActiveCartForUser, falling back to DB. Error: {}", t.getMessage());
-        return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE);
-    }
-
-    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCartItems")
-    @Retry(name = "redisRetry", fallbackMethod = "fallbackCartItems")
     private Optional<CartItemEntity> getCartItems(Long cartId,Long productId) {
-        List<CartItemEntity> items = cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId),
-                () -> cartItemRepository.findByCartId(cartId),
-                CartCacheDurationConstraints.DAY.toDuration());
+        List<CartItemEntity> items = cartServiceCache.getCartItemsFromCacheOrDB(cartId);
 
         return items.stream()
                 .filter(item -> item.getProductId().equals(productId))
                 .findFirst();
     }
 
-    private List<CartItemEntity> fallbackCartItems(Long cartId, Throwable t) {
-        log.error("Redis not available for getActiveCartForUser, falling back to DB. Error: {}", t.getMessage());
-        return  cartItemRepository.findByCartId(cartId);
-    }
 
-    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackClearCartCache")
-    @Retry(name = "redisRetry", fallbackMethod = "fallbackClearCartCache")
-    private void clearCartCache(Long userId, Long cartId) {
-        cacheUtil.deleteFromCache(CartCacheConstraints.CART_KEY.getKey(userId));
-        cacheUtil.deleteFromCache(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId));
-        log.debug("Cache cleared for user {} and cart {}", userId, cartId);
-    }
-
-    private void fallbackClearCartCache(Long userId, Long cartId, Throwable t) {
-        log.warn("Redis not available to clear cache for user {} and cart {}, ignoring. Error: {}", userId, cartId, t.getMessage());
-    }
 }
