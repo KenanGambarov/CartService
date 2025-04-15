@@ -9,6 +9,7 @@ import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
 import com.cartservice.exception.NotFoundException;
 import com.cartservice.mapper.CartItemMapper;
+import com.cartservice.mapper.CartMapper;
 import com.cartservice.repository.CartItemRepository;
 import com.cartservice.repository.CartRepository;
 import com.cartservice.services.CartService;
@@ -36,10 +37,7 @@ public class CartServiceImpl implements CartService {
     public void addProductToCart(Long userId, CartItemDto cartItemDto) {
         CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
         if (cart == null) {
-            cart = CartEntity.builder()
-                    .userId(userId)
-                    .status(CartStatus.ACTIVE)
-                    .build();
+            cart = CartMapper.createCart(userId);
             cart = cartRepository.save(cart);
             log.info("New cart created for user {}", userId);
 
@@ -60,11 +58,7 @@ public class CartServiceImpl implements CartService {
             existingItem.setQuantity(existingItem.getQuantity() + cartItemDto.getQuantity());
             cartItemRepository.save(existingItem);
         } else {
-            CartItemEntity cartItem = CartItemEntity.builder()
-                    .cart(cart)
-                    .productId(cartItemDto.getProductId())
-                    .quantity(cartItemDto.getQuantity())
-                    .build();
+            CartItemEntity cartItem = CartItemMapper.createCartItem(cartItemDto,cart);
             cartItemRepository.save(cartItem);
             log.info("User {} is adding product {} (quantity: {}) to cart", userId, cartItemDto.getProductId(), cartItemDto.getQuantity());
 
