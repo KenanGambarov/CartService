@@ -7,6 +7,7 @@ import com.cartservice.dto.enums.CartStatus;
 import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
+import com.cartservice.exception.ExceptionConstants;
 import com.cartservice.exception.NotFoundException;
 import com.cartservice.mapper.CartItemMapper;
 import com.cartservice.mapper.CartMapper;
@@ -46,9 +47,9 @@ public class CartServiceImpl implements CartService {
         ProductDto product = productServiceClient.getProductById(cartItemDto.getProductId());
 
         log.info("Feign client product {} ", product);
-        if (product == null) {
-            throw new RuntimeException("Product not found");
-        }
+//        if (product == null) {
+//            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
+//        }
 
         Optional<CartItemEntity> existingItemOpt =
                 getCartItems(cart.getId(), cartItemDto.getProductId());
@@ -73,7 +74,7 @@ public class CartServiceImpl implements CartService {
         CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
 
         if (cart == null) {
-            throw new NotFoundException("Cart not found for user");
+            throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
         }
 
         Optional<CartItemEntity> existingItemOpt =
@@ -98,7 +99,7 @@ public class CartServiceImpl implements CartService {
         CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
         if (cart == null) {
             log.warn("Cart not found for user {}", userId);
-            throw new NotFoundException("Cart not found");
+            throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
         }
 
         List<CartItemEntity> existingItem =  cartServiceCache.getCartItemsFromCacheOrDB(cart.getId());

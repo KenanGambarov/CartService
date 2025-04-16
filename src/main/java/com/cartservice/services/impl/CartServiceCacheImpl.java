@@ -31,9 +31,7 @@ public class CartServiceCacheImpl implements CartServiceCache {
     @Retry(name = "redisRetry", fallbackMethod = "fallbackGetActiveCartForUser")
     public CartEntity getActiveCartForUser(Long userId) {
         return cacheUtil.getOrLoad(CartCacheConstraints.CART_KEY.getKey(userId),
-                () -> {
-                    return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE);
-                },
+                () -> cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE),
                 CartCacheDurationConstraints.DAY.toDuration()
         );
 

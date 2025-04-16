@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -17,48 +18,56 @@ public class GlobalExceptionHandler {
 
     // 404
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ExceptionResponse handleNotFoundException(NotFoundException ex) {
         log.warn("NotFoundException: {}", ex.getMessage());
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", ex.getMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        return ExceptionResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .errors(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .build();
     }
 
     // 400 – validation error
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleValidationException(MethodArgumentNotValidException ex) {
         log.warn("Validation failed: {}", ex.getMessage());
 
         Map<String, Object> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
-            errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-        });
+        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation Failed");
-        body.put("details", errors);
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return ExceptionResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .errors(ExceptionConstants.VALIDATION_FAILED.getMessage())
+                .details(errors)
+                .build();
     }
 
     // General Exception
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse handleGenericException(Exception ex) {
         log.error("Unexpected error occurred", ex);
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
-        body.put("message", "Something went wrong");
+        return ExceptionResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .errors(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(ExceptionConstants.UNEXPECTED_ERROR.getMessage())
+                .build();
+    }
 
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(FeignClientException.class)
+    public ResponseEntity<ExceptionResponse> handleGenericException(FeignClientException ex) {
+        log.error("FeignClientException: {}", ex.getMessage());
+
+        return ResponseEntity.status(ex.getStatus()).body(ExceptionResponse.builder()
+                        .message(ex.getMessage())
+                        .build());
     }
 }
