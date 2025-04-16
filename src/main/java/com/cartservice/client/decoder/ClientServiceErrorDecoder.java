@@ -18,12 +18,13 @@ public class ClientServiceErrorDecoder implements ErrorDecoder {
 
         JsonNode jsonNode;
         try(var body = response.body().asInputStream()) {
+            log.info("body status {}" , response.status());
             jsonNode = new ObjectMapper().readValue(body, JsonNode.class);
         }catch (Exception e){
             throw new FeignClientException(CLIENT_ERROR.getMessage(),response.status());
         }
 
-        log.error("ClientService decode error Message: {}, Method {}",errorMessage,methodKey);
+        log.error("ClientService decode error Message: {}, Method {}, Status {} ",errorMessage,methodKey,response.status());
         if(jsonNode.has(MESSAGE.getValue()))
             errorMessage=jsonNode.get(MESSAGE.getValue()).asText();
 

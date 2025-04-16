@@ -63,11 +63,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FeignClientException.class)
-    public ResponseEntity<ExceptionResponse> handleGenericException(FeignClientException ex) {
-        log.error("FeignClientException: {}", ex.getMessage());
+    public ExceptionResponse handleGenericException(FeignClientException ex) {
+        log.error("FeignClientException: {}, Status {}", ex.getMessage(),ex.getStatus());
 
-        return ResponseEntity.status(ex.getStatus()).body(ExceptionResponse.builder()
-                        .message(ex.getMessage())
-                        .build());
+        return ExceptionResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(ex.getStatus())
+                .message(ex.getMessage())
+                .build();
     }
 }

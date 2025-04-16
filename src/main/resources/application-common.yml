@@ -21,6 +21,6 @@ redis:
     urls: redis://redis:6379
 client:
   product-service:
-    url: ms.product:8080/
+    url: http://ms.product:8080
 server:
   port: 8081
