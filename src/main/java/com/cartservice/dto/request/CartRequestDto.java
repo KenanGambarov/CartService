@@ -13,7 +13,7 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartDto implements Serializable {
+public class CartRequestDto implements Serializable {
 
     private CartStatus status;
 

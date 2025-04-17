@@ -2,8 +2,7 @@ package com.cartservice.services.impl;
 
 import com.cartservice.client.ProductServiceClient;
 import com.cartservice.dto.product.ProductDto;
-import com.cartservice.dto.request.CartItemDto;
-import com.cartservice.dto.enums.CartStatus;
+import com.cartservice.dto.request.CartItemRequestDto;
 import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
@@ -35,7 +34,7 @@ public class CartServiceImpl implements CartService {
 
     @Transactional
     @Override
-    public void addProductToCart(Long userId, CartItemDto cartItemDto) {
+    public void addProductToCart(Long userId, CartItemRequestDto cartItemDto) {
         CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
         if (cart == null) {
             cart = CartMapper.createCart(userId);

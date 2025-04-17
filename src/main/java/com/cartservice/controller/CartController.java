@@ -1,6 +1,6 @@
 package com.cartservice.controller;
 
-import com.cartservice.dto.request.CartItemDto;
+import com.cartservice.dto.request.CartItemRequestDto;
 import com.cartservice.dto.response.CartItemResponseDto;
 import com.cartservice.services.CartService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class CartController {
 
     @PostMapping("/{userId}/product/add")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemDto cartItemDto){
+    public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemRequestDto cartItemDto){
         cartService.addProductToCart(userId,cartItemDto);
     }
 
