@@ -19,13 +19,13 @@ public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/{userId}/product/add")
+    @PostMapping("/{userId}/product/")
     @ResponseStatus(HttpStatus.CREATED)
     public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemRequestDto cartItemDto){
         cartService.addProductToCart(userId,cartItemDto);
     }
 
-    @DeleteMapping("/{userId}/{productId}/delete")
+    @DeleteMapping("/{userId}/{productId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long userId, @PathVariable Long productId){
         cartService.deleteProductFromCart(userId,productId);

@@ -42,13 +42,8 @@ public class CartServiceImpl implements CartService {
             log.info("New cart created for user {}", userId);
 
         }
-        log.info("getProductId {} ", cartItemDto.getProductId());
         ProductDto product = productServiceClient.getProductById(cartItemDto.getProductId());
-
         log.info("Feign client product {} ", product);
-//        if (product == null) {
-//            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
-//        }
 
         Optional<CartItemEntity> existingItemOpt =
                 getCartItems(cart.getId(), cartItemDto.getProductId());

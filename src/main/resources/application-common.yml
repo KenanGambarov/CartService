@@ -16,11 +16,20 @@ spring:
     uris: http://elasticsearch:9200
     username: elastic
     password: sSM*iZr*b0SOvxjC_QqP
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
 redis:
   server:
     urls: redis://redis:6379
 client:
   product-service:
     url: http://ms.product:8080
+rabbitmq:
+  publisher-service:
+    queue: PRODUCT_UPDATE
+    dlq: PRODUCT_UPDATE_DLQ
 server:
   port: 8081
