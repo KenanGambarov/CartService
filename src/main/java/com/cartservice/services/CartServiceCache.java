@@ -12,4 +12,5 @@ public interface CartServiceCache {
     List<CartItemEntity> getCartItemsFromCacheOrDB(Long cartId);
 
     void clearCartCache(Long userId, Long cartId);
+
 }

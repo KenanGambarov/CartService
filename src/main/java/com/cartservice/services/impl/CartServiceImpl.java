@@ -4,6 +4,7 @@ import com.cartservice.client.ProductServiceClient;
 import com.cartservice.dto.product.ProductDto;
 import com.cartservice.dto.request.CartItemRequestDto;
 import com.cartservice.dto.response.CartItemResponseDto;
+import com.cartservice.dto.response.StockRequestDto;
 import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
 import com.cartservice.exception.ExceptionConstants;
@@ -103,6 +104,16 @@ public class CartServiceImpl implements CartService {
         }
 
         return existingItem.stream().map(CartItemMapper::toResponseDto).toList();
+
+    }
+
+    @Override
+    public void removeOutOfStockItems(StockRequestDto requestDto) {
+        if(requestDto.getQuantity()==0){
+            cartItemRepository.deleteAllByProductId(requestDto.getProductId());
+            log.info("Out of stock items removed");
+        }
+
 
     }
 

@@ -24,7 +24,7 @@ public class StockListener {
     public void consume(String message){
         try {
             var data = objectMapper.readValue(message, StockRequestDto.class);
-            log.error("Consume message : {}", data.getQuantity());
+            cartService.removeOutOfStockItems(data);
         } catch (JsonProcessingException e) {
             log.error("Consume message invalid format: {}", e.getMessage());
         }catch (Exception ex){
