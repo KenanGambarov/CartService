@@ -28,8 +28,11 @@ client:
   product-service:
     url: http://ms.product:8080
 rabbitmq:
-  publisher-service:
+  product-service:
     queue: PRODUCT_UPDATE
     dlq: PRODUCT_UPDATE_DLQ
+  order-service:
+    queue: ORDER_UPDATE
+    dlq: ORDER_UPDATE_DLQ
 server:
   port: 8081
