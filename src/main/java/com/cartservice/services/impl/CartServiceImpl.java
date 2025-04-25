@@ -1,10 +1,12 @@
 package com.cartservice.services.impl;
 
 import com.cartservice.client.ProductServiceClient;
+import com.cartservice.dto.enums.CartStatus;
 import com.cartservice.dto.product.ProductDto;
 import com.cartservice.dto.request.CartItemRequestDto;
+import com.cartservice.dto.request.queue.OrderRequestDto;
 import com.cartservice.dto.response.CartItemResponseDto;
-import com.cartservice.dto.response.StockRequestDto;
+import com.cartservice.dto.request.queue.StockRequestDto;
 import com.cartservice.entity.CartEntity;
 import com.cartservice.entity.CartItemEntity;
 import com.cartservice.exception.ExceptionConstants;
@@ -87,6 +89,17 @@ public class CartServiceImpl implements CartService {
             cartItemRepository.save(existingItem);
         }
         cartServiceCache.clearCartCache(userId,cart.getId());
+    }
+
+    @Override
+    public void changeCartStatus(OrderRequestDto orderRequestDto) {
+        CartEntity cart = cartServiceCache.getActiveCartForUser(orderRequestDto.getUserId());
+
+        if (cart == null) {
+            throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
+        }
+        cart.setStatus(CartStatus.ORDERED);
+        cartServiceCache.clearCartCache(orderRequestDto.getUserId(),cart.getId());
     }
 
     @Override

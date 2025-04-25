@@ -1,9 +1,8 @@
-package com.cartservice.dto.response;
+package com.cartservice.dto.request.queue;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
