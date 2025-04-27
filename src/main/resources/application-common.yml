@@ -13,7 +13,7 @@ logging:
   config: classpath:logback-spring.xml
 spring:
   elasticsearch:
-    uris: http://elasticsearch:9200
+    uris: http://localhost:9200
     username: elastic
     password: sSM*iZr*b0SOvxjC_QqP
   rabbitmq:

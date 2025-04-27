@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor
@@ -29,31 +30,32 @@ public class CartServiceCacheImpl implements CartServiceCache {
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetActiveCartForUser")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackGetActiveCartForUser")
-    public CartEntity getActiveCartForUser(Long userId) {
-        return cacheUtil.getOrLoad(CartCacheConstraints.CART_KEY.getKey(userId),
+    public Optional<CartEntity> getActiveCartForUser(Long userId) {
+        CartEntity cartEntity =  cacheUtil.getOrLoad(CartCacheConstraints.CART_KEY.getKey(userId),
                 () -> cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE),
                 CartCacheDurationConstraints.DAY.toDuration()
         );
-
+        return Optional.ofNullable(cartEntity);
     }
 
-    public CartEntity fallbackGetActiveCartForUser(Long userId, Throwable t) {
+    public Optional fallbackGetActiveCartForUser(Long userId, Throwable t) {
         log.error("Redis not available for getActiveCartForUser {}, falling back to DB. Error: {}",userId, t.getMessage());
-        return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE);
+        return Optional.empty();
     }
 
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCartItems")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackCartItems")
-    public List<CartItemEntity> getCartItemsFromCacheOrDB(Long cartId) {
-        return cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId),
+    public Optional<List<CartItemEntity>> getCartItemsFromCacheOrDB(Long cartId) {
+        List<CartItemEntity> itemEntities = cacheUtil.getOrLoad(CartCacheConstraints.CART_ITEMS_KEY.getKey(cartId),
                 () -> cartItemRepository.findByCartId(cartId),
                 CartCacheDurationConstraints.DAY.toDuration());
+        return Optional.ofNullable(itemEntities);
     }
 
-    public List<CartItemEntity> fallbackCartItems(Long cartId, Throwable t) {
+    public Optional fallbackCartItems(Long cartId, Throwable t) {
         log.error("Redis not available for getCartItems for cart{}, falling back to DB. Error: {}",cartId, t.getMessage());
-        return  cartItemRepository.findByCartId(cartId);
+        return  Optional.empty();
     }
 
     @Override

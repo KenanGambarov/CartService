@@ -11,6 +11,6 @@ filebeat.inputs:
       service.name: cart-service
 
 output.elasticsearch:
-  hosts: ["http://elasticsearch:9200"]
+  hosts: ["http://elasticsearch_log:9200"]
   username: "elastic"    # Elasticsearch istifadəçi adı
   password: "sSM*iZr*b0SOvxjC_QqP"  #

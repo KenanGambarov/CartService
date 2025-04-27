@@ -23,7 +23,9 @@ public class OrderListener {
     @RabbitListener(queues = QUEUE_NAME)
     public void consume(String message){
         try {
+            log.info("consume Order begin");
             var data = objectMapper.readValue(message, OrderRequestDto.class);
+            log.info("consume Order begin userId {}" , data.getUserId());
             cartService.changeCartStatus(data);
         } catch (JsonProcessingException e) {
             log.error("Consume message invalid format: {}", e.getMessage());

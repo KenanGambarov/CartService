@@ -38,8 +38,9 @@ public class CartServiceImpl implements CartService {
     @Transactional
     @Override
     public void addProductToCart(Long userId, CartItemRequestDto cartItemDto) {
-        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
-        if (cart == null) {
+        Optional<CartEntity> cartOptional = cartServiceCache.getActiveCartForUser(userId);
+        CartEntity cart = cartOptional.get();
+        if (cartOptional.isEmpty()) {
             cart = CartMapper.createCart(userId);
             cart = cartRepository.save(cart);
             log.info("New cart created for user {}", userId);
@@ -68,9 +69,9 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void deleteProductFromCart(Long userId, Long productId) {
-        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
-
-        if (cart == null) {
+        Optional<CartEntity> cartOptional  = cartServiceCache.getActiveCartForUser(userId);
+        CartEntity cart = cartOptional.get();
+        if (cartOptional.isEmpty()) {
             throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
         }
 
@@ -93,29 +94,33 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void changeCartStatus(OrderRequestDto orderRequestDto) {
-        CartEntity cart = cartServiceCache.getActiveCartForUser(orderRequestDto.getUserId());
+        log.info("cart status1 {}",CartStatus.ORDERED);
+        Optional<CartEntity> cartOptional = cartServiceCache.getActiveCartForUser(orderRequestDto.getUserId());
 
-        if (cart == null) {
+        if (cartOptional.isEmpty()) {
             throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
         }
+        CartEntity cart = cartOptional.get();
+        log.info("cart status2 {}",CartStatus.ORDERED);
         cart.setStatus(CartStatus.ORDERED);
+        cartRepository.save(cart);
         cartServiceCache.clearCartCache(orderRequestDto.getUserId(),cart.getId());
     }
 
     @Override
     public List<CartItemResponseDto> getProductsFromCart(Long userId) {
-        CartEntity cart = cartServiceCache.getActiveCartForUser(userId);
-        if (cart == null) {
+        Optional<CartEntity> cartOptional = cartServiceCache.getActiveCartForUser(userId);
+        if (cartOptional.isEmpty()) {
             log.warn("Cart not found for user {}", userId);
             throw new NotFoundException(ExceptionConstants.CART_NOT_FOUND.getMessage());
         }
+        CartEntity cart = cartOptional.get();
+        Optional<List<CartItemEntity>> existingItemOptional =  cartServiceCache.getCartItemsFromCacheOrDB(cart.getId());
 
-        List<CartItemEntity> existingItem =  cartServiceCache.getCartItemsFromCacheOrDB(cart.getId());
-
-        if (existingItem.isEmpty()) {
+        if (existingItemOptional.isEmpty()) {
             throw new NotFoundException("Products not found in cart");
         }
-
+        List<CartItemEntity> existingItem = existingItemOptional.get();
         return existingItem.stream().map(CartItemMapper::toResponseDto).toList();
 
     }
@@ -132,8 +137,7 @@ public class CartServiceImpl implements CartService {
 
 
     private Optional<CartItemEntity> getCartItems(Long cartId,Long productId) {
-        List<CartItemEntity> items = cartServiceCache.getCartItemsFromCacheOrDB(cartId);
-
+        List<CartItemEntity> items = cartServiceCache.getCartItemsFromCacheOrDB(cartId).orElseThrow(()-> new NotFoundException("Products not found in cart"));
         return items.stream()
                 .filter(item -> item.getProductId().equals(productId))
                 .findFirst();
