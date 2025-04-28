@@ -38,7 +38,7 @@ public class CartServiceCacheImpl implements CartServiceCache {
         return Optional.ofNullable(cartEntity);
     }
 
-    public Optional fallbackGetActiveCartForUser(Long userId, Throwable t) {
+    public Optional<CartEntity> fallbackGetActiveCartForUser(Long userId, Throwable t) {
         log.error("Redis not available for getActiveCartForUser {}, falling back to DB. Error: {}",userId, t.getMessage());
         return Optional.empty();
     }
@@ -53,7 +53,7 @@ public class CartServiceCacheImpl implements CartServiceCache {
         return Optional.ofNullable(itemEntities);
     }
 
-    public Optional fallbackCartItems(Long cartId, Throwable t) {
+    public Optional<List<CartItemEntity>> fallbackCartItems(Long cartId, Throwable t) {
         log.error("Redis not available for getCartItems for cart{}, falling back to DB. Error: {}",cartId, t.getMessage());
         return  Optional.empty();
     }
