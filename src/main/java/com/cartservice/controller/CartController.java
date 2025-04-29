@@ -18,7 +18,7 @@ public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/{userId}/product/")
+    @PostMapping("/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
     public void addProductToCart(@PathVariable Long userId, @Validated @RequestBody CartItemRequestDto cartItemDto){
         cartService.addProductToCart(userId,cartItemDto);
@@ -30,7 +30,7 @@ public class CartController {
         cartService.deleteProductFromCart(userId,productId);
     }
 
-    @GetMapping("/{userId}/products")
+    @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public List<CartItemResponseDto> getProducts(@PathVariable Long userId){
         return cartService.getProductsFromCart(userId);
