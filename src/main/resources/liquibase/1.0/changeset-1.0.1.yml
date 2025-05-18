@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: 1-cart
+      id: 2-cart-item
       author: kenan
       changes:
         - createTable:
-            tableName: cart
+            tableName: cart_item
             columns:
               - column:
                   name: id
@@ -14,18 +14,25 @@ databaseChangeLog:
                     nullable: false
                     primaryKey: true
               - column:
-                  name: user_id
+                  name: cart_id
                   type: BIGINT
                   constraints:
                     nullable: false
               - column:
-                  name: status
-                  type: VARCHAR(20)
+                  name: product_id
+                  type: BIGINT
                   constraints:
                     nullable: false
               - column:
-                  name: created_at
-                  type: TIMESTAMP
-                  defaultValueComputed: CURRENT_TIMESTAMP
+                  name: quantity
+                  type: INT
                   constraints:
                     nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_cartitem_cart
+            baseTableName: cart_item
+            baseColumnNames: cart_id
+            referencedTableName: cart
+            referencedColumnNames: id
+            onDelete: CASCADE
