@@ -12,6 +12,16 @@ resilience4j:
 logging:
   config: classpath:logback-spring.xml
 spring:
+  application:
+    name: cart-service
+  cloud:
+    consul:
+      host: consul
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+
   elasticsearch:
     uris: http://localhost:9200
     username: elastic
