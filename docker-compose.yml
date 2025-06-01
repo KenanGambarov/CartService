@@ -54,9 +54,11 @@ services:
     image: docker.elastic.co/beats/filebeat:8.11.1
     user: root
     volumes:
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./filebeat.ymfilebeat.yml
       - ./logs/cart-service:/opt/app/logs/cart-service
-#    depends_on:
+    read_only: false  # read-only xüsusiyyətini deaktiv edin
+    command: [ "sh", "-c", "chmod go-w /usr/share/filebeat/filebeat.yml" ]
+    #    depends_on:
 #      - elasticsearch
     networks:
       - ms-services

@@ -13,14 +13,25 @@ logging:
   config: classpath:logback-spring.xml
 spring:
   application:
-    name: cart-service
+    name: ms.cart
   cloud:
     consul:
       host: consul
       port: 8500
       discovery:
-        enabled: true
         register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+    rabbit:
+      enabled: false
+    redis:
+      enabled: false
 
   elasticsearch:
     uris: http://localhost:9200
